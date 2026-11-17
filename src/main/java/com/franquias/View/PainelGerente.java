@@ -1,0 +1,82 @@
+package com.franquias.View;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+
+import com.franquias.Controller.AplicacaoPrincipal;
+import com.franquias.Controller.GerenteController;
+import com.franquias.Controller.PedidoController;
+import com.franquias.View.PaineisGerente.*;
+
+public class PainelGerente extends PainelBase {
+
+    private GerenteController controller;
+    private PedidoController pedidoController;
+
+    private PainelControlarPedidos painelControlarPedidos;
+    private PainelGerarRelatorios painelGerarRelatorios;
+    private PainelGerenciarEquipe painelGerenciarEquipe;
+    private PainelGerenciarEstoque painelGerenciarEstoque;
+
+    public PainelGerente(AplicacaoPrincipal app, GerenteController controller, PedidoController pedidoController) {
+        super(app);
+        this.controller = controller;
+        this.pedidoController = pedidoController;
+
+        construirLayout();
+    }
+
+    @Override
+    public JMenu getMenu() {
+        JMenu menuOpcoes = new JMenu("Opções");
+
+        JMenuItem itemGerenciarEquipe = new JMenuItem("Gerenciar Equipe");
+        itemGerenciarEquipe.addActionListener(e -> {
+            if (painelGerenciarEquipe != null)
+                painelGerenciarEquipe.carregarDados();
+            mostrarSubPainel("GERENCIAR_EQUIPE");
+        });
+
+        JMenuItem itemControlarPedidos = new JMenuItem("Controlar Pedidos");
+        itemControlarPedidos.addActionListener(e -> {
+            if (painelControlarPedidos != null)
+                painelControlarPedidos.carregarDados();
+            mostrarSubPainel("CONTROLAR_PEDIDOS");
+        });
+
+        JMenuItem itemEstoque = new JMenuItem("Gerenciar Estoque");
+        itemEstoque.addActionListener(e -> {
+            if (painelGerenciarEstoque != null)
+                painelGerenciarEstoque.carregarDados();
+            mostrarSubPainel("GERENCIAR_ESTOQUE");
+        });
+
+        JMenuItem itemRelatorios = new JMenuItem("Gerar Relatórios");
+        itemRelatorios.addActionListener(e -> {
+            if (painelGerarRelatorios != null)
+                painelGerarRelatorios.carregarDados();
+            mostrarSubPainel("GERAR_RELATORIOS");
+        });
+
+        menuOpcoes.add(itemGerenciarEquipe);
+        menuOpcoes.add(itemControlarPedidos);
+        menuOpcoes.add(itemEstoque);
+        menuOpcoes.add(itemRelatorios);
+
+        return menuOpcoes;
+    }
+
+    @Override
+    protected void registrarSubPaineis(JPanel painelDeCards) {
+        this.painelGerenciarEquipe = new PainelGerenciarEquipe(controller, app.getFramePrincipal());
+        this.painelControlarPedidos = new PainelControlarPedidos(controller, app.getFramePrincipal(), pedidoController);
+        this.painelGerenciarEstoque = new PainelGerenciarEstoque(controller, app.getFramePrincipal());
+        this.painelGerarRelatorios = new PainelGerarRelatorios(controller, app.getFramePrincipal());
+
+        painelDeCards.add(painelGerenciarEquipe, "GERENCIAR_EQUIPE");
+        painelDeCards.add(painelControlarPedidos, "CONTROLAR_PEDIDOS");
+        painelDeCards.add(painelGerenciarEstoque, "GERENCIAR_ESTOQUE");
+        painelDeCards.add(painelGerarRelatorios, "GERAR_RELATORIOS");
+    }
+}
