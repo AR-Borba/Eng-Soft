@@ -18,6 +18,7 @@ import com.franquias.Persistence.ClientePersistence;
 import com.franquias.Persistence.PedidoPersistence;
 import com.franquias.Persistence.ProdutoPersistence;
 import com.franquias.Persistence.VendedorPersistence;
+import com.franquias.application.factory.PedidoFactory;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
 import com.franquias.Service.ClienteService;
@@ -48,7 +49,7 @@ public class VendedorController {
         this.pedidoService = new PedidoService(pedidoPersistence, estoqueService, vendedorPersistence);
         this.clienteService = new ClienteService(clientePersistence);
 
-        this.pedidoAtual = new Pedido();
+        this.pedidoAtual = PedidoFactory.criarVazio();
     }
 
     public void iniciarSessao(Vendedor vendedor) {
@@ -57,7 +58,7 @@ public class VendedorController {
     }
 
     public void iniciarNovoPedido() {
-        this.pedidoAtual = new Pedido(vendedorLogado);
+        this.pedidoAtual = PedidoFactory.criarNovo(vendedorLogado);
     }
 
     public void adicionarItemAoPedido(long idProduto, int quantidade)

@@ -11,13 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.franquias.Model.entities.Usuários.Vendedor;
+import com.franquias.Model.enums.TipoDeConta;
+import com.franquias.application.factory.UsuarioFactory;
 
 public class VendedorTest {
     Vendedor vendedor;
 
     @BeforeEach
     void setUp() {
-        vendedor = new Vendedor("Vendedor Teste", "teste@email.com", "123", "12345678900", 1L);
+        vendedor = (Vendedor) UsuarioFactory.criar(
+                TipoDeConta.VENDEDOR, "Vendedor Teste", "teste@email.com",
+                "123", "12345678900", 1L);
     }
     
     @Test

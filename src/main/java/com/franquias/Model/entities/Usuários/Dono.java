@@ -2,6 +2,9 @@ package com.franquias.Model.entities.Usuários;
 
 public class Dono extends Usuario {
 
+    public Dono() {
+    }
+
     public Dono(String nome, String cpf, String email, String senha) {
         super(nome, email, senha, cpf);
     }

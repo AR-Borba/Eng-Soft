@@ -6,10 +6,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.franquias.Model.*;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.*;
+import com.franquias.application.observer.PedidoObserver;
+import com.franquias.application.pagamento.FormaDePagamentoStrategy;
+import com.franquias.application.pagamento.FormaDePagamentoStrategyFactory;
+import com.franquias.application.entrega.ModalidadeEntregaStrategy;
+import com.franquias.application.entrega.ModalidadeEntregaStrategyFactory;
 
 public class Pedido {
     private long id;
@@ -24,15 +31,18 @@ public class Pedido {
     private BigDecimal valorTotal;
     private Vendedor vendedorResponsavel;
     private long franquiaId;
+    private transient List<PedidoObserver> observers;
 
     public Pedido() {
         this.produtos = new HashMap<Produto, Integer>();
+        this.observers = new ArrayList<>();
     }
 
     public Pedido(Vendedor vendedor) {
         this.vendedorResponsavel = vendedor;
         this.franquiaId = vendedor.getFranquiaId();
         this.produtos = new HashMap<>();
+        this.observers = new ArrayList<>();
         this.cliente = new Cliente();
         this.dataHora = LocalDateTime.now();
         atualizarDataHoraFormatada();
@@ -46,6 +56,7 @@ public class Pedido {
             FormaDePagamento formaDePagamento, BigDecimal taxas, ModalidadeEntrega modalidadeDeEntrega,
             StatusPedido statusPedido) {
         this.produtos = produtos;
+        this.observers = new ArrayList<>();
         this.cliente = cliente;
         this.dataHora = LocalDateTime.now();
         atualizarDataHoraFormatada();
@@ -158,8 +169,34 @@ public class Pedido {
         return statusPedido;
     }
 
+    public void adicionarObserver(PedidoObserver observer) {
+        if (observer == null) {
+            throw new IllegalArgumentException("O observer do pedido não pode ser nulo.");
+        }
+
+        observers().add(observer);
+    }
+
+    public void removerObserver(PedidoObserver observer) {
+        observers().remove(observer);
+    }
+
     public void setStatusPedido(StatusPedido statusPedido) {
+        StatusPedido statusAnterior = this.statusPedido;
         this.statusPedido = statusPedido;
+
+        if (statusAnterior != statusPedido) {
+            for (PedidoObserver observer : new ArrayList<>(observers())) {
+                observer.pedidoAlterado(this, statusAnterior, statusPedido);
+            }
+        }
+    }
+
+    private List<PedidoObserver> observers() {
+        if (observers == null) {
+            observers = new ArrayList<>();
+        }
+        return observers;
     }
 
     public void calcularEAtualizaValorTotal() {
@@ -177,7 +214,15 @@ public class Pedido {
         }
 
         BigDecimal taxasAtuais = (this.taxas == null) ? BigDecimal.ZERO : taxas;
-        this.valorTotal = subtotalItens.add(taxasAtuais);
+        FormaDePagamentoStrategy estrategia =
+                FormaDePagamentoStrategyFactory.criar(this.formaDePagamento);
+        BigDecimal valorComPagamento =
+                estrategia.calcularValorTotal(subtotalItens, taxasAtuais);
+
+        ModalidadeEntregaStrategy estrategiaEntrega =
+                ModalidadeEntregaStrategyFactory.criar(this.modalidadeDeEntrega);
+        this.valorTotal =
+                estrategiaEntrega.calcularValorTotal(valorComPagamento, BigDecimal.ZERO);
     }
 
     @Override
