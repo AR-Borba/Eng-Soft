@@ -18,6 +18,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 import com.franquias.Controller.GerenteController;
 import com.franquias.Model.entities.Usuários.Vendedor;
+import com.franquias.Model.enums.TipoDeConta;
+import com.franquias.application.factory.UsuarioFactory;
 import com.franquias.Utils.ValidadorCPF;
 import com.franquias.Utils.ValidadorTexto;
 
@@ -34,7 +36,7 @@ public class DialogFormularioVendedor extends JDialog {
 
     public DialogFormularioVendedor(Frame parent, GerenteController controller) {
         super(parent, "Editando vendedor", true);
-        vendedor = new Vendedor();
+        vendedor = (Vendedor) UsuarioFactory.criarVazio(TipoDeConta.VENDEDOR);
         configurarUI(controller);
     }
 

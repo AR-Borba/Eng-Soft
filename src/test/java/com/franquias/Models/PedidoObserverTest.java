@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.enums.StatusPedido;
+import com.franquias.application.factory.PedidoFactory;
 
 public class PedidoObserverTest {
 
     @Test
     void deveNotificarObserverQuandoStatusDoPedidoForAlterado() {
-        Pedido pedido = new Pedido();
+        Pedido pedido = PedidoFactory.criarVazio();
         AtomicReference<StatusPedido> statusAnterior = new AtomicReference<>();
         AtomicReference<StatusPedido> novoStatus = new AtomicReference<>();
 
@@ -32,7 +33,7 @@ public class PedidoObserverTest {
 
     @Test
     void naoDeveNotificarQuandoStatusNaoMudar() {
-        Pedido pedido = new Pedido();
+        Pedido pedido = PedidoFactory.criarVazio();
         AtomicReference<StatusPedido> statusNotificado = new AtomicReference<>();
         pedido.adicionarObserver((pedidoAlterado, anterior, novo) -> statusNotificado.set(novo));
 
@@ -43,7 +44,7 @@ public class PedidoObserverTest {
 
     @Test
     void deveRejeitarObserverNulo() {
-        Pedido pedido = new Pedido();
+        Pedido pedido = PedidoFactory.criarVazio();
 
         assertThrows(IllegalArgumentException.class, () -> pedido.adicionarObserver(null));
     }

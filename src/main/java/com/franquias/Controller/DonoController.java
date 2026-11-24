@@ -20,6 +20,8 @@ import com.franquias.Persistence.PedidoPersistence;
 import com.franquias.Persistence.VendedorPersistence;
 import com.franquias.Utils.Endereco;
 import com.franquias.exceptions.ValidationException;
+import com.franquias.application.factory.UsuarioFactory;
+import com.franquias.Model.enums.TipoDeConta;
 import com.franquias.Persistence.DonoPersistence;
 import com.franquias.Persistence.FranquiaPersistence;
 
@@ -56,7 +58,8 @@ public class DonoController {
         if(loginController.emailJaExiste(email)) {
             throw new ValidationException("O email " + email + " já está em uso no sistema");
         }
-        Dono novoDono = new Dono(nome, cpf, email, senha);
+        Dono novoDono = (Dono) UsuarioFactory.criar(
+                TipoDeConta.DONO, nome, email, senha, cpf, -1L);
         donoPersistence.adicionarDono(novoDono);
     }
 

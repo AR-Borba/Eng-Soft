@@ -17,6 +17,8 @@ import javax.swing.text.MaskFormatter;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import com.franquias.Model.entities.Usuários.Gerente;
+import com.franquias.Model.enums.TipoDeConta;
+import com.franquias.application.factory.UsuarioFactory;
 
 import br.com.caelum.stella.validation.CPFValidator;
 import br.com.caelum.stella.validation.InvalidStateException;
@@ -32,7 +34,7 @@ public class DialogCadastroGerente extends JDialog {
 
     public DialogCadastroGerente(Frame parent) {   
         super(parent, "Cadastrando gerente", true);
-        gerente = new Gerente();
+        gerente = (Gerente) UsuarioFactory.criarVazio(TipoDeConta.GERENTE);
         configurarUI();
     }
 

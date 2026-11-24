@@ -11,13 +11,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.franquias.Model.entities.Usuários.Gerente;
+import com.franquias.Model.enums.TipoDeConta;
+import com.franquias.application.factory.UsuarioFactory;
 
 public class GerenteTest {
     Gerente gerente;
 
     @BeforeEach
     void setUp() {
-        gerente = new Gerente("Gerente Teste", "teste@email.com", "123", "12345678900");
+        gerente = (Gerente) UsuarioFactory.criar(
+                TipoDeConta.GERENTE, "Gerente Teste", "teste@email.com",
+                "123", "12345678900", -1L);
     }
     
     @Test

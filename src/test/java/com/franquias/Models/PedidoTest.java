@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.franquias.Model.Produto;
 import com.franquias.Model.entities.Pedido;
+import com.franquias.application.factory.PedidoFactory;
 
 public class PedidoTest {
     
@@ -30,7 +31,7 @@ public class PedidoTest {
     
         
 
-        pedido = new Pedido();
+        pedido = PedidoFactory.criarVazio();
         pedido.setTaxa(new BigDecimal("15.00"));
     }
 
