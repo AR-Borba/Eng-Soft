@@ -7,10 +7,12 @@ import java.util.List;
 import com.franquias.Model.entities.Franquia;
 import com.franquias.Model.entities.Usuários.Dono;
 import com.franquias.Model.entities.Usuários.Gerente;
+import com.franquias.Model.enums.TipoDeConta;
 import com.franquias.Repository.DonoRepository;
 import com.franquias.Repository.FranquiaRepository;
 import com.franquias.Repository.GerenteRepository;
 import com.franquias.Utils.Endereco;
+import com.franquias.application.factory.UsuarioFactory;
 import com.franquias.exceptions.ValidationException;
 
 public class FranquiaService {
@@ -34,7 +36,8 @@ public class FranquiaService {
         if (autenticacaoService.emailJaExiste(email)) {
             throw new ValidationException("O email " + email + " já está em uso no sistema");
         }
-        Dono novoDono = new Dono(nome, cpf, email, senha);
+        Dono novoDono = (Dono) UsuarioFactory.criar(
+                TipoDeConta.DONO, nome, email, senha, cpf, -1L);
         donoRepository.adicionarDono(novoDono);
     }
 

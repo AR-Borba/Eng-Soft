@@ -12,11 +12,6 @@ import com.franquias.Service.FranquiaService;
 import com.franquias.Service.RelatorioService;
 import com.franquias.Utils.Endereco;
 import com.franquias.exceptions.ValidationException;
-import com.franquias.application.factory.UsuarioFactory;
-import com.franquias.Model.enums.TipoDeConta;
-import com.franquias.Persistence.DonoPersistence;
-import com.franquias.Persistence.FranquiaPersistence;
-import com.franquias.Service.RelatorioService;
 
 public class DonoController {
 
@@ -38,12 +33,7 @@ public class DonoController {
     }
 
     public void cadastrarDono(String nome, String cpf, String email, String senha) throws ValidationException {
-        if(loginController.emailJaExiste(email)) {
-            throw new ValidationException("O email " + email + " já está em uso no sistema");
-        }
-        Dono novoDono = (Dono) UsuarioFactory.criar(
-                TipoDeConta.DONO, nome, email, senha, cpf, -1L);
-        donoPersistence.adicionarDono(novoDono);
+        franquiaService.cadastrarDono(nome, cpf, email, senha);
     }
 
     public void cadastrarGerente(Gerente gerente) throws ValidationException {

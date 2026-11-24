@@ -10,11 +10,8 @@ import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.FormaDePagamento;
 import com.franquias.Model.enums.ModalidadeEntrega;
-import com.franquias.Model.enums.StatusPedido;
-import com.franquias.Persistence.ClientePersistence;
-import com.franquias.Persistence.PedidoPersistence;
-import com.franquias.Persistence.ProdutoPersistence;
-import com.franquias.Persistence.VendedorPersistence;
+import com.franquias.Service.ClienteService;
+import com.franquias.Service.PedidoService;
 import com.franquias.application.factory.PedidoFactory;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
@@ -26,18 +23,9 @@ public class VendedorController {
     private Vendedor vendedorLogado;
     private Pedido pedidoAtual;
 
-    public VendedorController(AplicacaoPrincipal app, PedidoPersistence pedidoPersistence,
-            ProdutoPersistence produtoPersistence, VendedorPersistence vendedorPersistence,
-            ClientePersistence clientePersistence) {
-        this.app = app;
-        this.pedidoPersistence = pedidoPersistence;
-        this.produtoPersistence = produtoPersistence;
-        this.vendedorPersistence = vendedorPersistence;
-        this.clientePersistence = clientePersistence;
-        EstoqueService estoqueService = new EstoqueService(produtoPersistence);
-        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService, vendedorPersistence);
-        this.clienteService = new ClienteService(clientePersistence);
-
+    public VendedorController(PedidoService pedidoService, ClienteService clienteService) {
+        this.pedidoService = pedidoService;
+        this.clienteService = clienteService;
         this.pedidoAtual = PedidoFactory.criarVazio();
     }
 
