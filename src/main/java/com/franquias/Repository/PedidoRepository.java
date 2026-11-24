@@ -13,4 +13,6 @@ public interface PedidoRepository {
     void adicionarPedido(Pedido pedido);
 
     void update(Pedido pedido);
+
+    List<Pedido> findByFranquia(long franquiaId);
 }

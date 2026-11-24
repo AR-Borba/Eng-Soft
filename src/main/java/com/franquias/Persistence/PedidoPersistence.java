@@ -3,6 +3,7 @@ package com.franquias.Persistence;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,17 +13,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository {
+public class PedidoPersistence implements PedidoRepository {
 
-    private static final String PATH = "data" + File.separator + "pedido.json";
+    private static final String PATH = Arquivo.DATA_DIRECTORY + File.separator + "pedido.json";
     private final Gson gson = new GsonBuilder()
-            .enableComplexMapKeySerialization() // << ESTA É A LINHA CHAVE
-            .setPrettyPrinting() // Opcional, mas recomendado para legibilidade do JSON
+            .enableComplexMapKeySerialization()
+            .setPrettyPrinting()
             .create();
 
     private long proximoId;
-
-    private List<Pedido> pedidosEmMemoria;
+    private final List<Pedido> pedidosEmMemoria;
 
     public PedidoPersistence() {
         this.pedidosEmMemoria = new ArrayList<>();
@@ -45,29 +45,23 @@ public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository 
     private void determinarProximoId() {
         if (!this.pedidosEmMemoria.isEmpty()) {
             long maiorId = this.pedidosEmMemoria.stream().mapToLong(Pedido::getId).max().getAsLong();
-
             this.proximoId = maiorId + 1;
         } else {
             this.proximoId = 1;
         }
     }
 
-    @Override
-    public void save(List<Pedido> itens) {
+    private void save(List<Pedido> itens) {
         String json = gson.toJson(itens);
-
-        File diretorio = new File(DIRECTORY);
-        if (!diretorio.exists())
-            diretorio.mkdirs();
-
         Arquivo.salva(PATH, json);
     }
 
     @Override
     public List<Pedido> findAll() {
-        return this.pedidosEmMemoria;
+        return Collections.unmodifiableList(new ArrayList<>(this.pedidosEmMemoria));
     }
 
+    @Override
     public void adicionarPedido(Pedido novoPedido) {
         novoPedido.setId(this.proximoId);
         this.pedidosEmMemoria.add(novoPedido);
@@ -75,6 +69,7 @@ public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository 
         save(this.pedidosEmMemoria);
     }
 
+    @Override
     public Pedido buscarPorId(long idPedido) {
         return pedidosEmMemoria.stream().filter(p -> p.getId() == idPedido).findFirst().orElse(null);
     }
@@ -83,6 +78,7 @@ public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository 
         return this.proximoId;
     }
 
+    @Override
     public void update(Pedido pedido) {
         int index = -1;
         for (int i = 0; i < pedidosEmMemoria.size(); i++) {
@@ -98,9 +94,10 @@ public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository 
         }
     }
 
+    @Override
     public List<Pedido> findByFranquia(long franquiaId) {
-        return pedidosEmMemoria.stream()
+        return Collections.unmodifiableList(pedidosEmMemoria.stream()
                 .filter(pedido -> pedido.getFranquiaId() == franquiaId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 }

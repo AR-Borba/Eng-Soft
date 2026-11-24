@@ -1,53 +1,30 @@
 package com.franquias.Controller;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.validation.ValidationException;
 
-import com.franquias.Model.Produto;
 import com.franquias.Model.entities.Cliente;
 import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.FormaDePagamento;
 import com.franquias.Model.enums.ModalidadeEntrega;
-import com.franquias.Model.enums.StatusPedido;
-import com.franquias.Persistence.ClientePersistence;
-import com.franquias.Persistence.PedidoPersistence;
-import com.franquias.Persistence.ProdutoPersistence;
-import com.franquias.Persistence.VendedorPersistence;
+import com.franquias.Service.ClienteService;
+import com.franquias.Service.PedidoService;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
-import com.franquias.Service.ClienteService;
-import com.franquias.Service.EstoqueService;
-import com.franquias.Service.PedidoService;
 
 public class VendedorController {
 
-    private AplicacaoPrincipal app;
-    private Vendedor vendedorLogado;
-    private Pedido pedidoAtual;
-    private VendedorPersistence vendedorPersistence;
-    private PedidoPersistence pedidoPersistence;
-    private ProdutoPersistence produtoPersistence;
-    private ClientePersistence clientePersistence;
     private final PedidoService pedidoService;
     private final ClienteService clienteService;
+    private Vendedor vendedorLogado;
+    private Pedido pedidoAtual;
 
-    public VendedorController(AplicacaoPrincipal app, PedidoPersistence pedidoPersistence,
-            ProdutoPersistence produtoPersistence, VendedorPersistence vendedorPersistence,
-            ClientePersistence clientePersistence) {
-        this.app = app;
-        this.pedidoPersistence = pedidoPersistence;
-        this.produtoPersistence = produtoPersistence;
-        this.vendedorPersistence = vendedorPersistence;
-        this.clientePersistence = clientePersistence;
-        EstoqueService estoqueService = new EstoqueService(produtoPersistence);
-        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService, vendedorPersistence);
-        this.clienteService = new ClienteService(clientePersistence);
-
+    public VendedorController(PedidoService pedidoService, ClienteService clienteService) {
+        this.pedidoService = pedidoService;
+        this.clienteService = clienteService;
         this.pedidoAtual = new Pedido();
     }
 
@@ -70,7 +47,7 @@ public class VendedorController {
     }
 
     public void finalizaPedido() {
-        pedidoPersistence.adicionarPedido(pedidoAtual);
+        pedidoService.salvarPedido(pedidoAtual);
         this.iniciarNovoPedido();
     }
 
@@ -79,49 +56,19 @@ public class VendedorController {
     }
 
     public Pedido buscarPedidoPorId(long idPedido) {
-        return pedidoPersistence.buscarPorId(idPedido);
+        return pedidoService.buscarPorId(idPedido);
     }
 
     public List<Pedido> getPedidosVendedor() {
-        List<Long> idPedidos = vendedorLogado.getListaIdPedidos();
-
-        if (idPedidos == null)
-            return new ArrayList<>();
-
-        List<Pedido> pedidosVendedor = new ArrayList<>();
-
-        Pedido pedidoId;
-        for (Long idPedido : idPedidos) {
-            pedidoId = pedidoPersistence.buscarPorId(idPedido);
-
-            if (pedidoId != null)
-                pedidosVendedor.add(pedidoId);
-        }
-
-        return Collections.unmodifiableList(pedidosVendedor);
+        return pedidoService.listarPorIds(vendedorLogado.getListaIdPedidos());
     }
 
     public List<Pedido> getPedidosVendedorPendentesAlteracao() {
-        List<Long> idPedidos = vendedorLogado.getListaIdPedidos();
-
-        if (idPedidos == null)
-            return new ArrayList<>();
-
-        List<Pedido> pedidosVendedor = new ArrayList<>();
-
-        Pedido pedidoId;
-        for (Long idPedido : idPedidos) {
-            pedidoId = pedidoPersistence.buscarPorId(idPedido);
-
-            if (pedidoId != null && pedidoId.getStatusPedido() == StatusPedido.EM_ALTERACAO)
-                pedidosVendedor.add(pedidoId);
-        }
-
-        return Collections.unmodifiableList(pedidosVendedor);
+        return pedidoService.listarEmAlteracaoPorIds(vendedorLogado.getListaIdPedidos());
     }
 
     public void atualizarPedido(Pedido pedido) {
-        pedidoPersistence.update(pedido);
+        pedidoService.atualizar(pedido);
     }
 
     public void finalizarPedido(Cliente cliente, BigDecimal taxa, ModalidadeEntrega modalidadeEntrega,

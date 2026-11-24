@@ -3,6 +3,7 @@ package com.franquias.Persistence;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.franquias.Model.entities.Cliente;
@@ -10,16 +11,16 @@ import com.franquias.Repository.ClienteRepository;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class ClientePersistence implements Persistence<Cliente>, ClienteRepository {
+public class ClientePersistence implements ClienteRepository {
 
-    private static final String PATH = "data" + File.separator + "cliente.json";
+    private static final String PATH = Arquivo.DATA_DIRECTORY + File.separator + "cliente.json";
     private final Gson gson = new Gson();
     private long proximoId;
 
-    private List<Cliente> clientesEmMemoria;
+    private final List<Cliente> clientesEmMemoria;
 
     public ClientePersistence() {
-        clientesEmMemoria = new ArrayList<>();
+        this.clientesEmMemoria = new ArrayList<>();
         carregarDoArquivo();
         determinarProximoId();
     }
@@ -39,29 +40,23 @@ public class ClientePersistence implements Persistence<Cliente>, ClienteReposito
     private void determinarProximoId() {
         if (!this.clientesEmMemoria.isEmpty()) {
             long maiorId = this.clientesEmMemoria.stream().mapToLong(Cliente::getId).max().getAsLong();
-
             this.proximoId = maiorId + 1;
         } else {
             this.proximoId = 1;
         }
     }
 
-    @Override
-    public void save(List<Cliente> itens) {
+    private void save(List<Cliente> itens) {
         String json = gson.toJson(itens);
-
-        File diretorio = new File(DIRECTORY);
-        if (!diretorio.exists())
-            diretorio.mkdirs();
-
         Arquivo.salva(PATH, json);
     }
 
     @Override
     public List<Cliente> findAll() {
-        return this.clientesEmMemoria;
+        return Collections.unmodifiableList(new ArrayList<>(this.clientesEmMemoria));
     }
 
+    @Override
     public void add(Cliente novoCliente) {
         novoCliente.setId(proximoId);
         clientesEmMemoria.add(novoCliente);
@@ -69,13 +64,14 @@ public class ClientePersistence implements Persistence<Cliente>, ClienteReposito
         save(clientesEmMemoria);
     }
 
+    @Override
     public Cliente findByCpf(String cpf) {
         if (cpf == null || cpf.isBlank()) {
             return null;
         }
 
         return clientesEmMemoria.stream()
-                .filter(cliente -> cliente.getCpf().equals(cpf))
+                .filter(cliente -> cpf.equals(cliente.getCpf()))
                 .findFirst()
                 .orElse(null);
     }

@@ -10,6 +10,10 @@ public interface ProdutoRepository {
 
     Produto buscarPorId(long idProduto);
 
+    void adicionarProduto(Produto novoProduto);
+
+    void removerProduto(long idProduto);
+
     void update(Produto produto);
 
     void adicionarAoEstoque(Produto produto, int quantidade);

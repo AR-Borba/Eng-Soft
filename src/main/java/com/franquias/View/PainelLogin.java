@@ -3,14 +3,20 @@ package com.franquias.View;
 import javax.swing.*;
 import java.awt.*;
 
+import com.franquias.Controller.AplicacaoPrincipal;
 import com.franquias.Controller.LoginController;
+import com.franquias.Model.entities.Usuários.Dono;
+import com.franquias.Model.entities.Usuários.Gerente;
+import com.franquias.Model.entities.Usuários.Usuario;
+import com.franquias.Model.entities.Usuários.Vendedor;
+import com.franquias.exceptions.AuthenticationException;
 
 public class PainelLogin extends JPanel {
 
     JPasswordField pfSenha;
     JTextField tfEmail;
 
-    public PainelLogin(LoginController controller) {
+    public PainelLogin(AplicacaoPrincipal app, LoginController controller) {
         this.setLayout(new GridBagLayout());
         JPanel painelLogin = new JPanel();
         painelLogin.setLayout(new GridBagLayout());
@@ -70,12 +76,29 @@ public class PainelLogin extends JPanel {
                 return;
             }
 
-            controller.realizarLogin(email, senha);
+            try {
+                Usuario usuarioAutenticado = controller.realizarLogin(email, senha);
+                JOptionPane.showMessageDialog(this, "Bem vindo " + usuarioAutenticado.getNome() + "!",
+                        "Autenticação Bem Sucedida!", JOptionPane.INFORMATION_MESSAGE);
+
+                if (usuarioAutenticado instanceof Dono dono) {
+                    app.getDonoController().iniciarSessao(dono);
+                    app.mostrarTela("DONO");
+                } else if (usuarioAutenticado instanceof Gerente gerente) {
+                    app.getGerenteController().iniciarSessao(gerente);
+                    app.mostrarTela("GERENTE");
+                } else if (usuarioAutenticado instanceof Vendedor vendedor) {
+                    app.getVendedorController().iniciarSessao(vendedor);
+                    app.mostrarTela("VENDEDOR");
+                }
+            } catch (AuthenticationException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de autenticação!",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         painelLogin.add(btEntrar, gbc);
 
         this.add(painelLogin);
     }
-
 }
