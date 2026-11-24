@@ -4,6 +4,7 @@ import com.franquias.Model.entities.Pedido;
 import com.franquias.Persistence.PedidoPersistence;
 import com.franquias.Persistence.ProdutoPersistence;
 import com.franquias.exceptions.EstoqueInsuficienteException;
+import com.franquias.exceptions.ProdutoNaoEncontradoException;
 import com.franquias.Service.EstoqueService;
 import com.franquias.Service.PedidoService;
 
@@ -12,7 +13,7 @@ public class PedidoController {
     private PedidoPersistence pedidoPersistence;
     private ProdutoPersistence produtoPersistence;
     private final PedidoService pedidoService;
-
+    
     public PedidoController(PedidoPersistence pedidoPersistence, ProdutoPersistence produtoPersistence) {
         this.pedidoPersistence = pedidoPersistence;
         this.produtoPersistence = produtoPersistence;
@@ -27,7 +28,8 @@ public class PedidoController {
         pedidoService.solicitarCancelamento(pedido);
     }
 
-    public void adicionarItem(Pedido pedido, long idProduto, int qtd) throws EstoqueInsuficienteException {
+    public void adicionarItem(Pedido pedido, long idProduto, int qtd)
+            throws EstoqueInsuficienteException, ProdutoNaoEncontradoException {
         pedidoService.adicionarItem(pedido, idProduto, qtd);
     }
 

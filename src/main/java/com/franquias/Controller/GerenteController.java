@@ -14,6 +14,7 @@ import com.franquias.Model.entities.Cliente;
 import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Gerente;
 import com.franquias.Model.entities.Usuários.Vendedor;
+import com.franquias.Model.enums.StatusPedido;
 import com.franquias.Persistence.GerentePersistence;
 import com.franquias.Persistence.PedidoPersistence;
 import com.franquias.Persistence.ProdutoPersistence;
@@ -22,6 +23,7 @@ import com.franquias.exceptions.ValidationException;
 import com.franquias.Service.EstoqueService;
 import com.franquias.Service.PedidoService;
 import com.franquias.Service.RelatorioService;
+
 
 public class GerenteController {
 

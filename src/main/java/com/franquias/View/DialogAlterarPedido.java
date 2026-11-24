@@ -14,6 +14,7 @@ import com.franquias.Model.Produto;
 import com.franquias.Model.enums.FormaDePagamento;
 import com.franquias.Model.enums.ModalidadeEntrega;
 import com.franquias.exceptions.EstoqueInsuficienteException;
+import com.franquias.exceptions.ProdutoNaoEncontradoException;
 
 public class DialogAlterarPedido extends JDialog {
 
@@ -238,6 +239,8 @@ public class DialogAlterarPedido extends JDialog {
                     JOptionPane.WARNING_MESSAGE);
         } catch (EstoqueInsuficienteException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Estoque Insuficiente!", JOptionPane.WARNING_MESSAGE);
+        } catch (ProdutoNaoEncontradoException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Produto Não Encontrado!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
