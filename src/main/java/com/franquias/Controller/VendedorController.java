@@ -1,11 +1,9 @@
 package com.franquias.Controller;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.ValidationException;
 
@@ -22,6 +20,9 @@ import com.franquias.Persistence.ProdutoPersistence;
 import com.franquias.Persistence.VendedorPersistence;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
+import com.franquias.Service.ClienteService;
+import com.franquias.Service.EstoqueService;
+import com.franquias.Service.PedidoService;
 
 public class VendedorController {
 
@@ -32,6 +33,8 @@ public class VendedorController {
     private PedidoPersistence pedidoPersistence;
     private ProdutoPersistence produtoPersistence;
     private ClientePersistence clientePersistence;
+    private final PedidoService pedidoService;
+    private final ClienteService clienteService;
 
     public VendedorController(AplicacaoPrincipal app, PedidoPersistence pedidoPersistence,
             ProdutoPersistence produtoPersistence, VendedorPersistence vendedorPersistence,
@@ -41,6 +44,9 @@ public class VendedorController {
         this.produtoPersistence = produtoPersistence;
         this.vendedorPersistence = vendedorPersistence;
         this.clientePersistence = clientePersistence;
+        EstoqueService estoqueService = new EstoqueService(produtoPersistence);
+        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService);
+        this.clienteService = new ClienteService(clientePersistence);
 
         this.pedidoAtual = new Pedido();
     }
@@ -56,24 +62,11 @@ public class VendedorController {
 
     public void adicionarItemAoPedido(long idProduto, int quantidade)
             throws EstoqueInsuficienteException, ProdutoNaoEncontradoException {
-        Produto produto = produtoPersistence.buscarPorId(idProduto);
-
-        if (produto == null) {
-            throw new ProdutoNaoEncontradoException("Produto não encontrado!");
-        }
-
-        if (produto.getQuantidadeEstoque() < quantidade) {
-            throw new EstoqueInsuficienteException("Estoque insuficiente para o produto: " + produto.getProduto()
-                    + ". Disponível: " + produto.getQuantidadeEstoque());
-        }
-
-        pedidoAtual.adicionarItem(produto, quantidade);
+        pedidoService.adicionarItem(pedidoAtual, idProduto, quantidade);
     }
 
     public void removerItemDoPedido(long idProduto) {
-        Produto produto = produtoPersistence.buscarPorId(idProduto);
-
-        pedidoAtual.removerItem(produto);
+        pedidoService.removerItem(pedidoAtual, idProduto);
     }
 
     public void finalizaPedido() {
@@ -133,44 +126,20 @@ public class VendedorController {
 
     public void finalizarPedido(Cliente cliente, BigDecimal taxa, ModalidadeEntrega modalidadeEntrega,
             FormaDePagamento formaDePagamento) {
-        this.pedidoAtual.setCliente(cliente);
-        this.pedidoAtual.setTaxa(taxa);
-        this.pedidoAtual.setModalidadeDeEntrega(modalidadeEntrega);
-        this.pedidoAtual.setFormaDePagamento(formaDePagamento);
-        this.pedidoAtual.setDataHora(LocalDateTime.now());
-        this.pedidoAtual.setStatusPedido(StatusPedido.CONCLUIDO);
-
-        this.pedidoAtual.calcularEAtualizaValorTotal();
-
-        for (Map.Entry<Produto, Integer> item : pedidoAtual.getItens().entrySet()) {
-            Produto produto = item.getKey();
-            int quantidadeVendida = item.getValue();
-
-            int novoEstoque = produto.getQuantidadeEstoque() - quantidadeVendida;
-            produto.setQuantidadeEstoque(novoEstoque);
-
-            produtoPersistence.update(produto);
+        try {
+            pedidoService.finalizar(pedidoAtual, vendedorLogado, cliente, taxa, modalidadeEntrega,
+                    formaDePagamento, vendedorPersistence);
+        } catch (EstoqueInsuficienteException e) {
+            throw new IllegalStateException("Não foi possível finalizar o pedido: " + e.getMessage(), e);
         }
-
-        pedidoPersistence.adicionarPedido(pedidoAtual);
-
-        vendedorLogado.adicionarPedidoPorId(pedidoAtual.getId());
-
-        vendedorPersistence.update(vendedorLogado);
-
         iniciarNovoPedido();
     }
 
     public List<Cliente> getClientesDisponiveis() {
-        return Collections.unmodifiableList(clientePersistence.findAll());
+        return clienteService.listar();
     }
 
     public void adicionarCliente(Cliente cliente) throws ValidationException {
-
-        if (clientePersistence.findByCpf(cliente.getCpf()) != null) {
-            throw new ValidationException("O CPF '" + cliente.getCpf() + "' já está cadastrado no sistema.");
-        }
-
-        clientePersistence.add(cliente);
+        clienteService.cadastrar(cliente);
     }
 }

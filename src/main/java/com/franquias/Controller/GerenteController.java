@@ -8,19 +8,20 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 
 import com.franquias.Model.Produto;
 import com.franquias.Model.entities.Cliente;
 import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Gerente;
 import com.franquias.Model.entities.Usuários.Vendedor;
-import com.franquias.Model.enums.StatusPedido;
 import com.franquias.Persistence.GerentePersistence;
 import com.franquias.Persistence.PedidoPersistence;
 import com.franquias.Persistence.ProdutoPersistence;
 import com.franquias.Persistence.VendedorPersistence;
 import com.franquias.exceptions.ValidationException;
+import com.franquias.Service.EstoqueService;
+import com.franquias.Service.PedidoService;
+import com.franquias.Service.RelatorioService;
 
 public class GerenteController {
 
@@ -31,6 +32,9 @@ public class GerenteController {
     private ProdutoPersistence produtoPersistence;
     private PedidoPersistence pedidoPersistence;
     private Gerente gerenteLogado;
+    private final EstoqueService estoqueService;
+    private final PedidoService pedidoService;
+    private final RelatorioService relatorioService;
 
     public GerenteController(AplicacaoPrincipal app,
             LoginController loginController,
@@ -44,6 +48,9 @@ public class GerenteController {
         this.vendedorPersistence = vendedorPersistence;
         this.produtoPersistence = produtoPersistence;
         this.pedidoPersistence = pedidoPersistence;
+        this.estoqueService = new EstoqueService(produtoPersistence);
+        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService);
+        this.relatorioService = new RelatorioService(pedidoPersistence);
     }
 
     public void iniciarSessao(Gerente gerente) {
@@ -93,24 +100,15 @@ public class GerenteController {
     }
 
     public void negarAlteracaoPedido(Pedido pedido) {
-        if(pedido != null) {
-            pedido.setStatusPedido(StatusPedido.CONCLUIDO);
-            pedidoPersistence.update(pedido);
-        }
+        pedidoService.negarAlteracao(pedido);
     }
 
     public void autorizarAlteracaoPedido(Pedido pedido) {
-        if (pedido != null && pedido.getStatusPedido() == StatusPedido.PENDENTE_ALTERACAO) {
-            pedido.setStatusPedido(StatusPedido.EM_ALTERACAO);
-            pedidoPersistence.update(pedido); // Salva a alteração
-        }
+        pedidoService.autorizarAlteracao(pedido);
     }
 
     public void autorizarExclusaoPedido(Pedido pedido) {
-        if (pedido != null && pedido.getStatusPedido() == StatusPedido.PENDENTE_EXCLUSAO) {
-            pedido.setStatusPedido(StatusPedido.CANCELADO);
-            pedidoPersistence.update(pedido); // Salva a alteração
-        }
+        pedidoService.autorizarExclusao(pedido);
     }
 
     public List<Pedido> getPedidos() {
@@ -178,7 +176,7 @@ public class GerenteController {
     }
 
     public void adicionarAoEstoque(Produto produto, int qtd) {
-        produtoPersistence.adicionarAoEstoque(produto, qtd);
+        estoqueService.adicionarAoEstoque(produto, qtd);
     }
 
     public Produto buscarProdutoPorId(long idProduto) {
@@ -186,33 +184,11 @@ public class GerenteController {
     }
 
     public BigDecimal calcularTotalVendasPorVendedor(Vendedor vendedor) {
-        if (vendedor.getListaIdPedidos() == null) {
-            return BigDecimal.ZERO;
-        }
-
-        BigDecimal total = BigDecimal.ZERO;
-        for (Long idPedido : vendedor.getListaIdPedidos()) {
-            Pedido pedido = pedidoPersistence.buscarPorId(idPedido);
-
-            if (pedido != null && pedido.getStatusPedido() == StatusPedido.CONCLUIDO) {
-                total = total.add(pedido.getValorTotal());
-            }
-        }
-        return total;
+        return relatorioService.calcularTotalVendas(vendedor);
     }
 
     public Map<Cliente, Long> getContagemDePedidosPorCliente() {
-        List<Pedido> todosOsPedidos = pedidoPersistence.findAll();
-
-        if (todosOsPedidos == null || todosOsPedidos.isEmpty()) {
-            return new HashMap<>(); // Retorna mapa vazio se não houver pedidos
-        }
-
-        return Collections.unmodifiableMap(todosOsPedidos.stream()
-                .filter(pedido -> pedido.getCliente() != null)
-                .collect(Collectors.groupingBy(
-                        Pedido::getCliente,
-                        Collectors.counting())));
+        return relatorioService.contarPedidosPorCliente();
     }
 
     public void atribiuFranquiaId(Vendedor vendedor) {
