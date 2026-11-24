@@ -10,6 +10,8 @@ import java.util.Map;
 import com.franquias.Model.*;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.*;
+import com.franquias.application.pagamento.FormaDePagamentoStrategy;
+import com.franquias.application.pagamento.FormaDePagamentoStrategyFactory;
 
 public class Pedido {
     private long id;
@@ -177,7 +179,9 @@ public class Pedido {
         }
 
         BigDecimal taxasAtuais = (this.taxas == null) ? BigDecimal.ZERO : taxas;
-        this.valorTotal = subtotalItens.add(taxasAtuais);
+        FormaDePagamentoStrategy estrategia =
+                FormaDePagamentoStrategyFactory.criar(this.formaDePagamento);
+        this.valorTotal = estrategia.calcularValorTotal(subtotalItens, taxasAtuais);
     }
 
     @Override
