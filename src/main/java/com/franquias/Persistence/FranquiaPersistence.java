@@ -3,18 +3,20 @@ package com.franquias.Persistence;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.franquias.Model.entities.Franquia;
+import com.franquias.Repository.FranquiaRepository;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class FranquiaPersistence implements Persistence<Franquia> {
+public class FranquiaPersistence implements FranquiaRepository {
 
-    private static final String PATH = "data" + File.separator + "franquias.json";
+    private static final String PATH = Arquivo.DATA_DIRECTORY + File.separator + "franquias.json";
     private final Gson gson = new Gson();
 
-    private List<Franquia> franquiasEmMemoria;
+    private final List<Franquia> franquiasEmMemoria;
     private long proximoId;
 
     public FranquiaPersistence() {
@@ -38,29 +40,23 @@ public class FranquiaPersistence implements Persistence<Franquia> {
     private void determinarProximoId() {
         if (!this.franquiasEmMemoria.isEmpty()) {
             long maiorId = this.franquiasEmMemoria.stream().mapToLong(Franquia::getId).max().getAsLong();
-
             this.proximoId = maiorId + 1;
         } else {
             this.proximoId = 1;
         }
     }
 
-    @Override
-    public void save(List<Franquia> itens) {
+    private void save(List<Franquia> itens) {
         String json = gson.toJson(itens);
-
-        File diretorio = new File(DIRECTORY);
-        if (!diretorio.exists())
-            diretorio.mkdirs();
-
         Arquivo.salva(PATH, json);
     }
 
     @Override
     public List<Franquia> findAll() {
-        return franquiasEmMemoria;
+        return Collections.unmodifiableList(new ArrayList<>(this.franquiasEmMemoria));
     }
 
+    @Override
     public void adicionarFranquia(Franquia novaFranquia) {
         novaFranquia.setId(this.proximoId);
         this.franquiasEmMemoria.add(novaFranquia);
@@ -68,25 +64,26 @@ public class FranquiaPersistence implements Persistence<Franquia> {
         save(this.franquiasEmMemoria);
     }
 
-    public void removerFranquia(long idfranquia) {
-        boolean foiRemovido = this.franquiasEmMemoria.removeIf(franquia -> franquia.getId() == idfranquia);
-
+    @Override
+    public void removerFranquia(long idFranquia) {
+        boolean foiRemovido = this.franquiasEmMemoria.removeIf(franquia -> franquia.getId() == idFranquia);
         if (foiRemovido) {
             save(franquiasEmMemoria);
         }
     }
 
+    @Override
     public void update(Franquia franquia) {
-        Franquia franquiaAntigo = buscarPorId(franquia.getId());
-
-        if (franquiaAntigo != null) {
-            franquiasEmMemoria.remove(franquiaAntigo);
+        Franquia franquiaAntiga = buscarPorId(franquia.getId());
+        if (franquiaAntiga != null) {
+            franquiasEmMemoria.remove(franquiaAntiga);
             franquiasEmMemoria.add(franquia);
             save(franquiasEmMemoria);
         }
     }
 
-    public Franquia buscarPorId(long idfranquia) {
-        return franquiasEmMemoria.stream().filter(v -> v.getId() == idfranquia).findFirst().orElse(null);
+    @Override
+    public Franquia buscarPorId(long idFranquia) {
+        return franquiasEmMemoria.stream().filter(f -> f.getId() == idFranquia).findFirst().orElse(null);
     }
 }

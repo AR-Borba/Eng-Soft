@@ -1,26 +1,16 @@
 package com.franquias.Controller;
 
 import com.franquias.Model.entities.Pedido;
-import com.franquias.Persistence.PedidoPersistence;
-import com.franquias.Persistence.ProdutoPersistence;
+import com.franquias.Service.PedidoService;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
-import com.franquias.Service.EstoqueService;
-import com.franquias.Service.PedidoService;
-import com.franquias.Persistence.VendedorPersistence;
 
 public class PedidoController {
 
-    private PedidoPersistence pedidoPersistence;
-    private ProdutoPersistence produtoPersistence;
     private final PedidoService pedidoService;
 
-    public PedidoController(PedidoPersistence pedidoPersistence, ProdutoPersistence produtoPersistence,
-            VendedorPersistence vendedorPersistence) {
-        this.pedidoPersistence = pedidoPersistence;
-        this.produtoPersistence = produtoPersistence;
-        this.pedidoService = new PedidoService(pedidoPersistence, new EstoqueService(produtoPersistence),
-                vendedorPersistence);
+    public PedidoController(PedidoService pedidoService) {
+        this.pedidoService = pedidoService;
     }
 
     public void solicitarAlteracao(Pedido pedido) {

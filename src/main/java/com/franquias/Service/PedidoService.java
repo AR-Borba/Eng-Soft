@@ -2,6 +2,9 @@ package com.franquias.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.franquias.Model.Produto;
@@ -18,15 +21,70 @@ import com.franquias.exceptions.ProdutoNaoEncontradoException;
 
 public class PedidoService {
 
-    private final PedidoRepository pedidoPersistence;
+    private final PedidoRepository pedidoRepository;
     private final EstoqueService estoqueService;
     private final VendedorRepository vendedorRepository;
 
-    public PedidoService(PedidoRepository pedidoPersistence, EstoqueService estoqueService,
+    public PedidoService(PedidoRepository pedidoRepository, EstoqueService estoqueService,
             VendedorRepository vendedorRepository) {
-        this.pedidoPersistence = pedidoPersistence;
+        this.pedidoRepository = pedidoRepository;
         this.estoqueService = estoqueService;
         this.vendedorRepository = vendedorRepository;
+    }
+
+    public Pedido buscarPorId(long idPedido) {
+        return pedidoRepository.buscarPorId(idPedido);
+    }
+
+    public void atualizar(Pedido pedido) {
+        pedidoRepository.update(pedido);
+    }
+
+    public void salvarPedido(Pedido pedido) {
+        pedidoRepository.adicionarPedido(pedido);
+    }
+
+    public List<Pedido> listarPorFranquia(long idFranquia) {
+        return pedidoRepository.findByFranquia(idFranquia);
+    }
+
+    public List<Pedido> listarPendentesPorFranquia(long idFranquia) {
+        List<Pedido> pendentes = new ArrayList<>();
+        for (Pedido pedido : pedidoRepository.findByFranquia(idFranquia)) {
+            if (pedido.getStatusPedido() == StatusPedido.PENDENTE_ALTERACAO
+                    || pedido.getStatusPedido() == StatusPedido.PENDENTE_EXCLUSAO) {
+                pendentes.add(pedido);
+            }
+        }
+        return Collections.unmodifiableList(pendentes);
+    }
+
+    public List<Pedido> listarPorIds(List<Long> idsPedidos) {
+        if (idsPedidos == null) {
+            return Collections.emptyList();
+        }
+        List<Pedido> pedidos = new ArrayList<>();
+        for (Long idPedido : idsPedidos) {
+            Pedido pedido = pedidoRepository.buscarPorId(idPedido);
+            if (pedido != null) {
+                pedidos.add(pedido);
+            }
+        }
+        return Collections.unmodifiableList(pedidos);
+    }
+
+    public List<Pedido> listarEmAlteracaoPorIds(List<Long> idsPedidos) {
+        if (idsPedidos == null) {
+            return Collections.emptyList();
+        }
+        List<Pedido> pedidos = new ArrayList<>();
+        for (Long idPedido : idsPedidos) {
+            Pedido pedido = pedidoRepository.buscarPorId(idPedido);
+            if (pedido != null && pedido.getStatusPedido() == StatusPedido.EM_ALTERACAO) {
+                pedidos.add(pedido);
+            }
+        }
+        return Collections.unmodifiableList(pedidos);
     }
 
     public void adicionarItem(Pedido pedido, long idProduto, int quantidade)
@@ -54,7 +112,7 @@ public class PedidoService {
     public void salvarAlteracoes(Pedido pedido) {
         pedido.calcularEAtualizaValorTotal();
         pedido.setStatusPedido(StatusPedido.CONCLUIDO);
-        pedidoPersistence.update(pedido);
+        pedidoRepository.update(pedido);
     }
 
     public void finalizar(Pedido pedido, Vendedor vendedor, Cliente cliente, BigDecimal taxa,
@@ -72,7 +130,7 @@ public class PedidoService {
             estoqueService.baixarEstoque(item.getKey(), item.getValue());
         }
 
-        pedidoPersistence.adicionarPedido(pedido);
+        pedidoRepository.adicionarPedido(pedido);
         vendedor.adicionarPedidoPorId(pedido.getId());
         vendedorRepository.update(vendedor);
     }
@@ -80,21 +138,21 @@ public class PedidoService {
     public void autorizarAlteracao(Pedido pedido) {
         if (pedido != null && pedido.getStatusPedido() == StatusPedido.PENDENTE_ALTERACAO) {
             pedido.setStatusPedido(StatusPedido.EM_ALTERACAO);
-            pedidoPersistence.update(pedido);
+            pedidoRepository.update(pedido);
         }
     }
 
     public void negarAlteracao(Pedido pedido) {
         if (pedido != null) {
             pedido.setStatusPedido(StatusPedido.CONCLUIDO);
-            pedidoPersistence.update(pedido);
+            pedidoRepository.update(pedido);
         }
     }
 
     public void autorizarExclusao(Pedido pedido) {
         if (pedido != null && pedido.getStatusPedido() == StatusPedido.PENDENTE_EXCLUSAO) {
             pedido.setStatusPedido(StatusPedido.CANCELADO);
-            pedidoPersistence.update(pedido);
+            pedidoRepository.update(pedido);
         }
     }
 }

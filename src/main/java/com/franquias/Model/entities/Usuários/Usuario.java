@@ -2,6 +2,9 @@ package com.franquias.Model.entities.Usuários;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
+import com.franquias.exceptions.CPFException;
+import com.franquias.exceptions.EmailException;
+
 import br.com.caelum.stella.validation.CPFValidator;
 import br.com.caelum.stella.validation.InvalidStateException;
 
@@ -55,17 +58,21 @@ public abstract class Usuario {
         this.senha = senha;
     }
 
-    public void validarEmail(String email) {
-        EmailValidator validator = EmailValidator.getInstance();
-        validator.isValid(email);
+    public void validarEmail(String email) throws EmailException {
+        if (email == null || email.isBlank() || !EmailValidator.getInstance().isValid(email)) {
+            throw new EmailException();
+        }
     }
 
-    public void validarCPF(String cpf) {
+    public void validarCPF(String cpf) throws CPFException {
+        if (cpf == null || cpf.isBlank()) {
+            throw new CPFException();
+        }
         CPFValidator validator = new CPFValidator();
         try {
             validator.assertValid(cpf);
         } catch (InvalidStateException e) {
-            System.out.println(e.getInvalidMessages());
+            throw new CPFException();
         }
     }
 

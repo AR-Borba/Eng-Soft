@@ -2,7 +2,9 @@ package com.franquias.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +16,22 @@ import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.StatusPedido;
 import com.franquias.Repository.PedidoRepository;
+import com.franquias.Repository.VendedorRepository;
 
 public class RelatorioService {
 
-    private final PedidoRepository pedidoPersistence;
+    private final PedidoRepository pedidoRepository;
+    private final VendedorRepository vendedorRepository;
 
-    public RelatorioService(PedidoRepository pedidoPersistence) {
-        this.pedidoPersistence = pedidoPersistence;
+    public RelatorioService(PedidoRepository pedidoRepository, VendedorRepository vendedorRepository) {
+        this.pedidoRepository = pedidoRepository;
+        this.vendedorRepository = vendedorRepository;
+    }
+
+    public List<Vendedor> getRankingVendedores() {
+        List<Vendedor> vendedores = new ArrayList<>(vendedorRepository.findAll());
+        vendedores.sort(Comparator.comparing(this::calcularTotalVendas).reversed());
+        return Collections.unmodifiableList(vendedores);
     }
 
     public BigDecimal calcularTotalVendas(Vendedor vendedor) {
@@ -28,7 +39,7 @@ public class RelatorioService {
             return BigDecimal.ZERO;
         }
         return vendedor.getListaIdPedidos().stream()
-                .map(pedidoPersistence::buscarPorId)
+                .map(pedidoRepository::buscarPorId)
                 .filter(pedido -> pedido != null && pedido.getStatusPedido() == StatusPedido.CONCLUIDO)
                 .map(Pedido::getValorTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -72,13 +83,13 @@ public class RelatorioService {
     }
 
     public Map<Cliente, Long> contarPedidosPorCliente() {
-        return Collections.unmodifiableMap(pedidoPersistence.findAll().stream()
+        return Collections.unmodifiableMap(pedidoRepository.findAll().stream()
                 .filter(pedido -> pedido.getCliente() != null)
                 .collect(Collectors.groupingBy(Pedido::getCliente, Collectors.counting())));
     }
 
     private List<Pedido> pedidosConcluidos() {
-        return pedidoPersistence.findAll().stream()
+        return pedidoRepository.findAll().stream()
                 .filter(pedido -> pedido.getStatusPedido() == StatusPedido.CONCLUIDO)
                 .collect(Collectors.toList());
     }

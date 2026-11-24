@@ -1,5 +1,9 @@
 package com.franquias.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.franquias.Model.Produto;
 import com.franquias.Repository.ProdutoRepository;
 import com.franquias.exceptions.EstoqueInsuficienteException;
@@ -7,14 +11,36 @@ import com.franquias.exceptions.ProdutoNaoEncontradoException;
 
 public class EstoqueService {
 
-    private final ProdutoRepository produtoPersistence;
+    private final ProdutoRepository produtoRepository;
 
-    public EstoqueService(ProdutoRepository produtoPersistence) {
-        this.produtoPersistence = produtoPersistence;
+    public EstoqueService(ProdutoRepository produtoRepository) {
+        this.produtoRepository = produtoRepository;
+    }
+
+    public List<Produto> listarTodos() {
+        return produtoRepository.findAll();
+    }
+
+    public List<Produto> listarComEstoqueBaixo(int limite) {
+        return Collections.unmodifiableList(produtoRepository.findAll().stream()
+                .filter(produto -> produto.getQuantidadeEstoque() < limite)
+                .collect(Collectors.toList()));
+    }
+
+    public void adicionarProduto(Produto produto) {
+        produtoRepository.adicionarProduto(produto);
+    }
+
+    public void editarProduto(Produto produtoEditado) {
+        produtoRepository.update(produtoEditado);
+    }
+
+    public void removerProduto(long idProduto) {
+        produtoRepository.removerProduto(idProduto);
     }
 
     public Produto buscarProduto(long idProduto) throws ProdutoNaoEncontradoException {
-        Produto produto = produtoPersistence.buscarPorId(idProduto);
+        Produto produto = produtoRepository.buscarPorId(idProduto);
         if (produto == null) {
             throw new ProdutoNaoEncontradoException("Produto não encontrado!");
         }
@@ -22,7 +48,7 @@ public class EstoqueService {
     }
 
     public Produto buscarProdutoSilenciosamente(long idProduto) {
-        return produtoPersistence.buscarPorId(idProduto);
+        return produtoRepository.buscarPorId(idProduto);
     }
 
     public void validarDisponibilidade(Produto produto, int quantidade)
@@ -39,13 +65,13 @@ public class EstoqueService {
     public void baixarEstoque(Produto produto, int quantidade) throws EstoqueInsuficienteException {
         validarDisponibilidade(produto, quantidade);
         produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - quantidade);
-        produtoPersistence.update(produto);
+        produtoRepository.update(produto);
     }
 
     public void adicionarAoEstoque(Produto produto, int quantidade) {
         if (quantidade <= 0) {
             throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
         }
-        produtoPersistence.adicionarAoEstoque(produto, quantidade);
+        produtoRepository.adicionarAoEstoque(produto, quantidade);
     }
 }
