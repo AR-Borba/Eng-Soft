@@ -1,15 +1,15 @@
 package com.franquias.Service;
 
 import com.franquias.Model.Produto;
-import com.franquias.Persistence.ProdutoPersistence;
+import com.franquias.Repository.ProdutoRepository;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
 
 public class EstoqueService {
 
-    private final ProdutoPersistence produtoPersistence;
+    private final ProdutoRepository produtoPersistence;
 
-    public EstoqueService(ProdutoPersistence produtoPersistence) {
+    public EstoqueService(ProdutoRepository produtoPersistence) {
         this.produtoPersistence = produtoPersistence;
     }
 

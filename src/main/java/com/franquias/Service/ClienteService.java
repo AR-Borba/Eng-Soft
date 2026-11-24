@@ -6,13 +6,13 @@ import java.util.List;
 import javax.validation.ValidationException;
 
 import com.franquias.Model.entities.Cliente;
-import com.franquias.Persistence.ClientePersistence;
+import com.franquias.Repository.ClienteRepository;
 
 public class ClienteService {
 
-    private final ClientePersistence clientePersistence;
+    private final ClienteRepository clientePersistence;
 
-    public ClienteService(ClientePersistence clientePersistence) {
+    public ClienteService(ClienteRepository clientePersistence) {
         this.clientePersistence = clientePersistence;
     }
 

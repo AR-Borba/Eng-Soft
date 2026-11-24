@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.franquias.Model.Produto;
+import com.franquias.Repository.ProdutoRepository;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class ProdutoPersistence implements Persistence<Produto> {
+public class ProdutoPersistence implements Persistence<Produto>, ProdutoRepository {
 
     private static final String PATH = "data" + File.separator + "produto.json";
     private final Gson gson = new Gson();

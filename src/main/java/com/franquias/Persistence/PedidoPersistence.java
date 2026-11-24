@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.franquias.Model.entities.Pedido;
+import com.franquias.Repository.PedidoRepository;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class PedidoPersistence implements Persistence<Pedido> {
+public class PedidoPersistence implements Persistence<Pedido>, PedidoRepository {
 
     private static final String PATH = "data" + File.separator + "pedido.json";
     private final Gson gson = new GsonBuilder()
