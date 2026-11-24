@@ -12,6 +12,8 @@ import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.*;
 import com.franquias.application.pagamento.FormaDePagamentoStrategy;
 import com.franquias.application.pagamento.FormaDePagamentoStrategyFactory;
+import com.franquias.application.entrega.ModalidadeEntregaStrategy;
+import com.franquias.application.entrega.ModalidadeEntregaStrategyFactory;
 
 public class Pedido {
     private long id;
@@ -181,7 +183,13 @@ public class Pedido {
         BigDecimal taxasAtuais = (this.taxas == null) ? BigDecimal.ZERO : taxas;
         FormaDePagamentoStrategy estrategia =
                 FormaDePagamentoStrategyFactory.criar(this.formaDePagamento);
-        this.valorTotal = estrategia.calcularValorTotal(subtotalItens, taxasAtuais);
+        BigDecimal valorComPagamento =
+                estrategia.calcularValorTotal(subtotalItens, taxasAtuais);
+
+        ModalidadeEntregaStrategy estrategiaEntrega =
+                ModalidadeEntregaStrategyFactory.criar(this.modalidadeDeEntrega);
+        this.valorTotal =
+                estrategiaEntrega.calcularValorTotal(valorComPagamento, BigDecimal.ZERO);
     }
 
     @Override
