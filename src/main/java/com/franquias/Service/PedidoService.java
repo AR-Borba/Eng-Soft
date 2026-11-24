@@ -11,19 +11,22 @@ import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.FormaDePagamento;
 import com.franquias.Model.enums.ModalidadeEntrega;
 import com.franquias.Model.enums.StatusPedido;
-import com.franquias.Persistence.PedidoPersistence;
-import com.franquias.Persistence.VendedorPersistence;
+import com.franquias.Repository.PedidoRepository;
+import com.franquias.Repository.VendedorRepository;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.exceptions.ProdutoNaoEncontradoException;
 
 public class PedidoService {
 
-    private final PedidoPersistence pedidoPersistence;
+    private final PedidoRepository pedidoPersistence;
     private final EstoqueService estoqueService;
+    private final VendedorRepository vendedorRepository;
 
-    public PedidoService(PedidoPersistence pedidoPersistence, EstoqueService estoqueService) {
+    public PedidoService(PedidoRepository pedidoPersistence, EstoqueService estoqueService,
+            VendedorRepository vendedorRepository) {
         this.pedidoPersistence = pedidoPersistence;
         this.estoqueService = estoqueService;
+        this.vendedorRepository = vendedorRepository;
     }
 
     public void adicionarItem(Pedido pedido, long idProduto, int quantidade)
@@ -55,8 +58,7 @@ public class PedidoService {
     }
 
     public void finalizar(Pedido pedido, Vendedor vendedor, Cliente cliente, BigDecimal taxa,
-            ModalidadeEntrega modalidadeEntrega, FormaDePagamento formaDePagamento,
-            VendedorPersistence vendedorPersistence)
+            ModalidadeEntrega modalidadeEntrega, FormaDePagamento formaDePagamento)
             throws EstoqueInsuficienteException {
         pedido.setCliente(cliente);
         pedido.setTaxa(taxa);
@@ -72,7 +74,7 @@ public class PedidoService {
 
         pedidoPersistence.adicionarPedido(pedido);
         vendedor.adicionarPedidoPorId(pedido.getId());
-        vendedorPersistence.update(vendedor);
+        vendedorRepository.update(vendedor);
     }
 
     public void autorizarAlteracao(Pedido pedido) {

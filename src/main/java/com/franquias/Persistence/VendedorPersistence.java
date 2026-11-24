@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.franquias.Model.entities.Usuários.Vendedor;
+import com.franquias.Repository.VendedorRepository;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class VendedorPersistence implements Persistence<Vendedor> {
+public class VendedorPersistence implements Persistence<Vendedor>, VendedorRepository {
 
     private static final String PATH = "data" + File.separator + "vendedor.json";
     private final Gson gson = new Gson();

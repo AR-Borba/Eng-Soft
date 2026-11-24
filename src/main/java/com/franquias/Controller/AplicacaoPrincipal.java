@@ -60,7 +60,7 @@ public class AplicacaoPrincipal {
         vendedorController = new VendedorController(this, pedidoPersistence, produtoPersistence, vendedorPersistence, clientePersistence);
         gerenteController = new GerenteController(this, loginController, gerentePersistence, vendedorPersistence, produtoPersistence, pedidoPersistence);
         donoController = new DonoController(this, loginController, donoPersistence, franquiaPersistence, gerentePersistence, pedidoPersistence, vendedorPersistence);
-        pedidoController = new PedidoController(pedidoPersistence, produtoPersistence);
+        pedidoController = new PedidoController(pedidoPersistence, produtoPersistence, vendedorPersistence);
         
         PainelCadastroDono painelCadastroDono = new PainelCadastroDono(this, donoController);
         PainelLogin painelLogin = new PainelLogin(loginController);

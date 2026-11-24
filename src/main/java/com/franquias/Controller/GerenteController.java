@@ -49,7 +49,7 @@ public class GerenteController {
         this.produtoPersistence = produtoPersistence;
         this.pedidoPersistence = pedidoPersistence;
         this.estoqueService = new EstoqueService(produtoPersistence);
-        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService);
+        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService, vendedorPersistence);
         this.relatorioService = new RelatorioService(pedidoPersistence);
     }
 

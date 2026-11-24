@@ -6,6 +6,7 @@ import com.franquias.Persistence.ProdutoPersistence;
 import com.franquias.exceptions.EstoqueInsuficienteException;
 import com.franquias.Service.EstoqueService;
 import com.franquias.Service.PedidoService;
+import com.franquias.Persistence.VendedorPersistence;
 
 public class PedidoController {
 
@@ -13,10 +14,12 @@ public class PedidoController {
     private ProdutoPersistence produtoPersistence;
     private final PedidoService pedidoService;
 
-    public PedidoController(PedidoPersistence pedidoPersistence, ProdutoPersistence produtoPersistence) {
+    public PedidoController(PedidoPersistence pedidoPersistence, ProdutoPersistence produtoPersistence,
+            VendedorPersistence vendedorPersistence) {
         this.pedidoPersistence = pedidoPersistence;
         this.produtoPersistence = produtoPersistence;
-        this.pedidoService = new PedidoService(pedidoPersistence, new EstoqueService(produtoPersistence));
+        this.pedidoService = new PedidoService(pedidoPersistence, new EstoqueService(produtoPersistence),
+                vendedorPersistence);
     }
 
     public void solicitarAlteracao(Pedido pedido) {

@@ -45,7 +45,7 @@ public class VendedorController {
         this.vendedorPersistence = vendedorPersistence;
         this.clientePersistence = clientePersistence;
         EstoqueService estoqueService = new EstoqueService(produtoPersistence);
-        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService);
+        this.pedidoService = new PedidoService(pedidoPersistence, estoqueService, vendedorPersistence);
         this.clienteService = new ClienteService(clientePersistence);
 
         this.pedidoAtual = new Pedido();
@@ -128,7 +128,7 @@ public class VendedorController {
             FormaDePagamento formaDePagamento) {
         try {
             pedidoService.finalizar(pedidoAtual, vendedorLogado, cliente, taxa, modalidadeEntrega,
-                    formaDePagamento, vendedorPersistence);
+                    formaDePagamento);
         } catch (EstoqueInsuficienteException e) {
             throw new IllegalStateException("Não foi possível finalizar o pedido: " + e.getMessage(), e);
         }

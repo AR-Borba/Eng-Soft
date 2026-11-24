@@ -13,13 +13,13 @@ import com.franquias.Model.entities.Franquia;
 import com.franquias.Model.entities.Pedido;
 import com.franquias.Model.entities.Usuários.Vendedor;
 import com.franquias.Model.enums.StatusPedido;
-import com.franquias.Persistence.PedidoPersistence;
+import com.franquias.Repository.PedidoRepository;
 
 public class RelatorioService {
 
-    private final PedidoPersistence pedidoPersistence;
+    private final PedidoRepository pedidoPersistence;
 
-    public RelatorioService(PedidoPersistence pedidoPersistence) {
+    public RelatorioService(PedidoRepository pedidoPersistence) {
         this.pedidoPersistence = pedidoPersistence;
     }
 

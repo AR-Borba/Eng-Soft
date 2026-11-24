@@ -6,10 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.franquias.Model.entities.Cliente;
+import com.franquias.Repository.ClienteRepository;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-public class ClientePersistence implements Persistence<Cliente> {
+public class ClientePersistence implements Persistence<Cliente>, ClienteRepository {
 
     private static final String PATH = "data" + File.separator + "cliente.json";
     private final Gson gson = new Gson();
